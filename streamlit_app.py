@@ -1,15 +1,14 @@
 """
 ====================================================================================================
-PROJECT: GIT DSA VISUAL PLATFORM (PROFESSIONAL EDITION)
+PROJECT: GIT DSA VISUAL PLATFORM (PROFESSIONAL EDITION - ROBUST ERROR-FREE BUILD)
 ====================================================================================================
 Design Specs:
   - Font Style: Calibri (Clean Medium Font Size)
   - Left Sidebar: Soft Lavender Theme (#F3E8FF / #EDE9FE)
-  - Linked List Chain: Human-readable Commit #1, Commit #2 with messages (No raw confusing hashes)
+  - Linked List Chain: Human-readable Commit #1, Commit #2 with messages
   - Graph: Compact circular dot nodes with dotted connectors
   - Emojis: Professional, minimal, refined developer aesthetic
-  - 4 Data Structures: Linked List, Stack, Hash Map, Graph all on one main workspace
-  - Dashboard: Separate clean analytics metrics
+  - Robust Error-Handling: Safely handles session state backwards-compatibility
 ====================================================================================================
 """
 
@@ -43,15 +42,20 @@ class CommitNode:
         self.time_val = timestamp if timestamp is not None else time.time()
         self.timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.time_val))
 
-    def to_dict(self, commit_num: int) -> Dict[str, Any]:
-        return {
-            "Version": f"Commit #{commit_num}",
+    def to_dict(self, *args, **kwargs) -> Dict[str, Any]:
+        """Safely returns dictionary representation supporting both 0 and 1 arguments."""
+        commit_num = args[0] if args else kwargs.get("commit_num", None)
+        parent_id = f"[{self.parent.commit_id}]" if getattr(self, "parent", None) else "None (Root)"
+        data = {
             "Commit ID": f"[{self.commit_id}]",
             "Message": self.message,
             "Branch": self.branch,
-            "Parent Pointer": f"[{self.parent.commit_id}]" if self.parent else "None (Root)",
+            "Parent Pointer": parent_id,
             "Timestamp": self.timestamp_str
         }
+        if commit_num is not None:
+            return {"Version": f"Commit #{commit_num}", **data}
+        return data
 
 
 class ObjectStore:
@@ -275,8 +279,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Session State Persistence
-if "engine" not in st.session_state:
+# Safe Session State Initialization (Auto-recovers from version mismatch)
+if "engine" not in st.session_state or not hasattr(st.session_state.engine, "commit_history_list"):
     st.session_state.engine = GitEngine()
 
 engine: GitEngine = st.session_state.engine
@@ -326,15 +330,18 @@ with st.sidebar:
     commit_options = {}
     for idx, c in enumerate(engine.commit_history_list):
         num = total_commits - idx
-        commit_options[f"Commit #{num} [{c.commit_id}]: {c.message[:20]}"] = c.commit_id
+        cid = getattr(c, "commit_id", "---")
+        msg = getattr(c, "message", "")[:20]
+        commit_options[f"Commit #{num} [{cid}]: {msg}"] = cid
 
-    target_display = st.selectbox("Restore Version:", list(commit_options.keys()))
-    if st.button("Checkout Version", use_container_width=True):
-        chosen_id = commit_options[target_display]
-        ok, msg = engine.checkout_commit(chosen_id)
-        if ok:
-            st.success(msg)
-            st.rerun()
+    if commit_options:
+        target_display = st.selectbox("Restore Version:", list(commit_options.keys()))
+        if st.button("Checkout Version", use_container_width=True):
+            chosen_id = commit_options[target_display]
+            ok, msg = engine.checkout_commit(chosen_id)
+            if ok:
+                st.success(msg)
+                st.rerun()
 
     st.markdown("---")
     st.caption(f"**Active HEAD:** `[{engine.refs.head_commit_id}]`")
@@ -394,17 +401,19 @@ if main_view == "Workspace (All 4 Data Structures)":
         total_nodes = len(engine.commit_history_list)
         for idx, c in enumerate(engine.commit_history_list):
             c_num = total_nodes - idx
-            is_head = c.commit_id == engine.refs.head_commit_id
+            cid = getattr(c, "commit_id", "")
+            c_msg_str = getattr(c, "message", "")[:18]
+            is_head = cid == engine.refs.head_commit_id
             fill_col = "#c084fc" if is_head else "#ede9fe"
             border_col = "#7e22ce" if is_head else "#a855f7"
             head_str = " (HEAD)" if is_head else ""
-            xlabel_text = f"Commit #{c_num}: {c.message[:18]}{head_str}"
+            xlabel_text = f"Commit #{c_num}: {c_msg_str}{head_str}"
 
             dot_lines.append(
-                f'  "{c.commit_id}" [label="", fillcolor="{fill_col}", color="{border_col}", xlabel="{xlabel_text}"];'
+                f'  "{cid}" [label="", fillcolor="{fill_col}", color="{border_col}", xlabel="{xlabel_text}"];'
             )
-            if c.parent:
-                dot_lines.append(f'  "{c.commit_id}" -> "{c.parent.commit_id}";')
+            if getattr(c, "parent", None):
+                dot_lines.append(f'  "{cid}" -> "{c.parent.commit_id}";')
 
         dot_lines.append("}")
         st.graphviz_chart("\n".join(dot_lines), use_container_width=True)
@@ -422,16 +431,33 @@ if main_view == "Workspace (All 4 Data Structures)":
         chain_elements = []
         for idx, c in enumerate(engine.commit_history_list):
             c_num = total_c - idx
-            is_head = c.commit_id == engine.refs.head_commit_id
+            cid = getattr(c, "commit_id", "")
+            c_msg_str = getattr(c, "message", "")
+            is_head = cid == engine.refs.head_commit_id
             head_tag = " (HEAD)" if is_head else ""
-            chain_elements.append(f"**Commit #{c_num}** `[{c.commit_id}]`: *\"{c.message}\"*{head_tag}")
+            chain_elements.append(f"**Commit #{c_num}** `[{cid}]`: *\"{c_msg_str}\"*{head_tag}")
 
         st.markdown(" ➔ ".join(chain_elements) + " ➔ `None (Root)`")
 
-        # Linked List Table with Commit Numbers
+        # Linked List Table with Commit Numbers (Robust to avoid TypeError)
         ll_table = []
         for idx, c in enumerate(engine.commit_history_list):
-            ll_table.append(c.to_dict(total_c - idx))
+            c_num = total_c - idx
+            try:
+                row = c.to_dict(c_num)
+            except Exception:
+                cid = getattr(c, "commit_id", "")
+                pid = f"[{c.parent.commit_id}]" if getattr(c, "parent", None) else "None (Root)"
+                row = {
+                    "Version": f"Commit #{c_num}",
+                    "Commit ID": f"[{cid}]",
+                    "Message": getattr(c, "message", ""),
+                    "Branch": getattr(c, "branch", "main"),
+                    "Parent Pointer": pid,
+                    "Timestamp": getattr(c, "timestamp_str", "")
+                }
+            ll_table.append(row)
+
         st.dataframe(ll_table, use_container_width=True)
 
     with col_right:
@@ -467,7 +493,7 @@ if main_view == "Workspace (All 4 Data Structures)":
         col_h1, col_h2 = st.columns(2)
         with col_h1:
             st.caption("ObjectStore (Key-Value Table)")
-            obj_data = [{"SHA-256 Key": k, "Commit Message": v.message} for k, v in engine.object_store.all_entries().items()]
+            obj_data = [{"SHA-256 Key": k, "Commit Message": getattr(v, "message", str(v))} for k, v in engine.object_store.all_entries().items()]
             st.dataframe(obj_data, use_container_width=True)
         with col_h2:
             st.caption("Branch RefTable")
