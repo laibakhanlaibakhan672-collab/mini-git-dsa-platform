@@ -250,10 +250,58 @@ st.markdown("""
         color: #111827 !important;
     }
 
-    html, body, [class*="css"], .stApp, p, span, div, label, input, textarea {
+    /* Global Base Font */
+    html, body, .stApp {
         font-family: Calibri, 'Segoe UI', Candara, Arial, sans-serif !important;
         font-size: 15.5px !important;
         color: #111827 !important;
+    }
+
+    /* Target Text Elements Specifically (Never break icon fonts) */
+    p, label, input, textarea, .stMarkdown p, .stMarkdown span, .stMarkdown li {
+        font-family: Calibri, 'Segoe UI', Candara, Arial, sans-serif !important;
+        color: #111827 !important;
+    }
+
+    /* Protect Streamlit Material Icons & Expander Arrows from font corruption */
+    [data-testid*="Icon"],
+    [data-testid*="icon"],
+    [data-testid="stExpanderToggleIcon"],
+    [data-testid="stExpanderToggleIcon"] *,
+    [class*="material-symbols"],
+    [class*="material-icons"],
+    span[class*="icon"],
+    svg {
+        font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+        word-wrap: normal !important;
+        direction: ltr !important;
+    }
+
+    /* Expander Component: Clean Monochrome Box with Proper Spacing */
+    details[data-testid="stExpander"] {
+        border: 1.5px solid #000000 !important;
+        border-radius: 4px !important;
+        background-color: #ffffff !important;
+        margin-top: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    details[data-testid="stExpander"] summary {
+        font-family: Calibri, 'Segoe UI', Candara, Arial, sans-serif !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #000000 !important;
+        padding: 9px 12px !important;
+        background-color: #fafafa !important;
+        border-radius: 3px !important;
+    }
+    details[data-testid="stExpander"] summary:hover {
+        background-color: #f3f4f6 !important;
     }
 
     h1, h2, h3, h4 {
@@ -609,7 +657,7 @@ if main_view == "Workspace (4 Data Structures)":
         st.graphviz_chart("\n".join(dot_lines), use_container_width=True)
 
     # --- PROFESSIONAL FEATURE: CODE DIFF VIEWER ---
-    with st.expander("🔍 Professional Code Diff Viewer (git diff)", expanded=False):
+    with st.expander("Professional Code Diff Viewer (git diff)", expanded=False):
         head_commit = engine.head_node
         if head_commit:
             head_lines = head_commit.content.splitlines(keepends=True)
