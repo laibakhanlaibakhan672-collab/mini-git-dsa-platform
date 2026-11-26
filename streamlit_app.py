@@ -1,14 +1,14 @@
 """
 ====================================================================================================
-PROJECT: GIT DSA VISUAL PLATFORM (PROFESSIONAL EDITION - ROBUST ERROR-FREE BUILD)
+PROJECT: GIT DSA PLATFORM (EXECUTIVE MONOCHROME / BLACK & WHITE EDITION)
 ====================================================================================================
-Design Specs:
-  - Font Style: Calibri (Clean Medium Font Size)
-  - Left Sidebar: Soft Lavender Theme (#F3E8FF / #EDE9FE)
-  - Linked List Chain: Human-readable Commit #1, Commit #2 with messages
-  - Graph: Compact circular dot nodes with dotted connectors
-  - Emojis: Professional, minimal, refined developer aesthetic
-  - Robust Error-Handling: Safely handles session state backwards-compatibility
+Design Specifications:
+  - Theme: Ultra-Clean High-Contrast Black & White (Monochrome Minimalist)
+  - Typography: Calibri (Medium readable size, crisp black text)
+  - Color Palette: Pure Black (#000000), White (#FFFFFF), Subtle Grayscale accents (#F8F9FA, #E5E7EB)
+  - Graph: Compact circular dot nodes (solid black HEAD dot, white dotted ancestors, black dotted edges)
+  - Layout: Single-Page 4-DS Workspace + Separate Analytics Dashboard
+  - Buttons: Minimalist black & white enterprise design
 ====================================================================================================
 """
 
@@ -167,12 +167,12 @@ class GitEngine:
         )
         self.head_node = commit_node
         self.commit_history_list.insert(0, commit_node)
-        self._log_dsa("Linked List", "Node Prepend (HEAD)", "O(1)", f"Commit [{commit_id}] points to parent [{parent_id_str}].")
+        self._log_dsa("Linked List", "Node Prepend", "O(1)", f"Commit [{commit_id}] -> parent [{parent_id_str}].")
 
         self.object_store.put(commit_id, commit_node)
         self.refs.set_branch(self.refs.current_branch, commit_id)
         self.refs.head_commit_id = commit_id
-        self._log_dsa("Hash Map", "ObjectStore & Ref Put", "O(1)", f"Saved commit [{commit_id}] in key-value store.")
+        self._log_dsa("Hash Map", "Object Store Put", "O(1)", f"Stored commit [{commit_id}] in key-value store.")
 
         return commit_node
 
@@ -181,7 +181,7 @@ class GitEngine:
         if not name or name in self.refs.branches or not self.refs.head_commit_id:
             return False, "Invalid branch name or branch already exists."
         self.refs.set_branch(name, self.refs.head_commit_id)
-        self._log_dsa("Hash Map", "Branch Ref Insert", "O(1)", f"Branch '{name}' created.")
+        self._log_dsa("Hash Map", "Branch Key Insert", "O(1)", f"Branch '{name}' created.")
         return True, f"Branch '{name}' created."
 
     def switch_branch(self, branch_name: str) -> Tuple[bool, str]:
@@ -225,77 +225,145 @@ class GitEngine:
 
 
 # ==================================================================================================
-# STREAMLIT UI: CALIBRI FONT + LAVENDER THEME + PROFESSIONAL MINIMAL STYLE
+# STREAMLIT UI: EXECUTIVE MONOCHROME / BLACK & WHITE MINIMALIST THEME
 # ==================================================================================================
 
 st.set_page_config(
     page_title="Git VCS Platform",
-    page_icon="❖",
+    page_icon="■",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling: Professional Calibri Font + Soft Lavender Sidebar
+# Custom High-Contrast Professional Black & White Styling
 st.markdown("""
 <style>
-    /* Global Font: Calibri Medium (15.5px) */
+    /* Global Background and Typography */
+    .stApp {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
     html, body, [class*="css"], .stApp, p, span, div, label, input, textarea, button, select {
         font-family: Calibri, 'Segoe UI', Candara, Arial, sans-serif !important;
         font-size: 15.5px !important;
+        color: #111111 !important;
     }
 
-    h1 { font-size: 24px !important; font-weight: 700 !important; color: #3b0764 !important; }
-    h2 { font-size: 20px !important; font-weight: 700 !important; color: #4c1d95 !important; }
-    h3 { font-size: 17px !important; font-weight: 700 !important; color: #581c87 !important; }
+    h1, h2, h3, h4 {
+        font-family: Calibri, 'Segoe UI', Candara, Arial, sans-serif !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.3px !important;
+    }
 
-    /* Left Sidebar: Soft Lavender */
+    h1 { font-size: 24px !important; margin-bottom: 4px !important; }
+    h2 { font-size: 19px !important; margin-bottom: 4px !important; }
+    h3 { font-size: 16px !important; margin-bottom: 4px !important; }
+
+    /* Sidebar: High-Contrast Crisp Black & White */
     section[data-testid="stSidebar"] {
-        background-color: #f3e8ff !important;
-        border-right: 1px solid #e9d5ff !important;
+        background-color: #fcfcfc !important;
+        border-right: 1.5px solid #000000 !important;
     }
 
     section[data-testid="stSidebar"] * {
-        color: #3b0764 !important;
+        color: #000000 !important;
     }
 
-    /* Clean Card Container */
-    .card-panel {
+    /* Executive Black & White Buttons */
+    button[kind="primary"], .stButton > button[kind="primary"] {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #000000 !important;
+        border-radius: 4px !important;
+        font-weight: 700 !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    button[kind="primary"]:hover {
+        background-color: #262626 !important;
+        border-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+    .stButton > button {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1.5px solid #000000 !important;
+        border-radius: 4px !important;
+        font-weight: 600 !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    .stButton > button:hover {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+    /* Monochrome Card Containers */
+    .bw-card {
         background: #ffffff;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 12px 16px;
+        border: 1.5px solid #000000;
+        border-radius: 4px;
+        padding: 14px 18px;
         margin-bottom: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
 
-    /* Stack Box */
-    .stack-record {
-        background: #faf5ff;
-        border: 1px dashed #c084fc;
-        border-radius: 6px;
+    .bw-metric {
+        background: #ffffff;
+        border: 1.5px solid #000000;
+        border-radius: 4px;
+        padding: 16px;
+        text-align: center;
+    }
+    .bw-metric-val {
+        font-size: 34px;
+        font-weight: 800;
+        color: #000000;
+    }
+    .bw-metric-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #444444;
+        letter-spacing: 0.5px;
+    }
+
+    /* Monochrome Stack Item */
+    .bw-stack-record {
+        background: #ffffff;
+        border: 1.5px dashed #000000;
+        border-radius: 4px;
         padding: 8px 12px;
         margin-bottom: 6px;
+    }
+
+    /* Textarea & Inputs */
+    textarea, input {
+        border: 1.5px solid #000000 !important;
+        border-radius: 4px !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Safe Session State Initialization (Auto-recovers from version mismatch)
+# Safe Session State Initialization (Crash-proof)
 if "engine" not in st.session_state or not hasattr(st.session_state.engine, "commit_history_list"):
     st.session_state.engine = GitEngine()
 
 engine: GitEngine = st.session_state.engine
 
 # ==================================================================================================
-# SIDEBAR (LAVENDER CONTROL PANEL - PROFESSIONAL)
+# SIDEBAR (EXECUTIVE BLACK & WHITE NAVIGATION)
 # ==================================================================================================
 
 with st.sidebar:
-    st.markdown("## ❖ Git Control Panel")
-    st.caption("Version Control System")
+    st.markdown("## ■ Git System")
+    st.caption("Version Control Console")
 
     main_view = st.radio(
         "Navigation:",
-        ["Workspace (All 4 Data Structures)", "Analytics Dashboard"],
+        ["Workspace (4 Data Structures)", "Analytics Dashboard"],
         index=0
     )
 
@@ -314,7 +382,7 @@ with st.sidebar:
             st.success(msg)
             st.rerun()
 
-    new_b = st.text_input("New Branch Name:", placeholder="e.g. feature-login")
+    new_b = st.text_input("New Branch Name:", placeholder="e.g. feature-auth")
     if st.button("Create Branch", use_container_width=True):
         if new_b:
             ok, msg = engine.create_branch(new_b)
@@ -325,7 +393,7 @@ with st.sidebar:
                 st.error(msg)
 
     st.markdown("---")
-    st.markdown("### Fast Version Checkout")
+    st.markdown("### Version Checkout")
     total_commits = len(engine.commit_history_list)
     commit_options = {}
     for idx, c in enumerate(engine.commit_history_list):
@@ -335,7 +403,7 @@ with st.sidebar:
         commit_options[f"Commit #{num} [{cid}]: {msg}"] = cid
 
     if commit_options:
-        target_display = st.selectbox("Restore Version:", list(commit_options.keys()))
+        target_display = st.selectbox("Select Version:", list(commit_options.keys()))
         if st.button("Checkout Version", use_container_width=True):
             chosen_id = commit_options[target_display]
             ok, msg = engine.checkout_commit(chosen_id)
@@ -344,18 +412,18 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
-    st.caption(f"**Active HEAD:** `[{engine.refs.head_commit_id}]`")
+    st.caption(f"**HEAD Pointer:** `[{engine.refs.head_commit_id}]`")
 
 
 # ==================================================================================================
-# VIEW 1: ALL 4 DATA STRUCTURES TOGETHER ON ONE WORKSPACE
+# VIEW 1: ALL 4 DATA STRUCTURES TOGETHER IN MONOCHROME WORKSPACE
 # ==================================================================================================
 
-if main_view == "Workspace (All 4 Data Structures)":
-    st.markdown("## Git Version Control Workspace")
-    st.caption("Linked List, Stack, Hash Map, and Graph integrated on a single page.")
+if main_view == "Workspace (4 Data Structures)":
+    st.markdown("## Version Control Workspace")
+    st.caption("Linked List, Stack, Hash Map, and Graph integrated in a single executive view.")
 
-    # Top Row: Code Editor & Small-Dot Graph
+    # Top Row: Code Editor & Monochrome Small-Dot Graph
     col_code, col_graph = st.columns([1.1, 0.9])
 
     with col_code:
@@ -386,16 +454,16 @@ if main_view == "Workspace (All 4 Data Structures)":
                     st.rerun()
 
     with col_graph:
-        st.markdown("### Commit Graph (Circular Dot Nodes)")
-        st.caption("Nodes are small circular dots connected by dotted lineage arrows.")
+        st.markdown("### Lineage Graph (Circular Dot Nodes)")
+        st.caption("Commits rendered as small circular dot nodes with dotted ancestry connectors.")
 
-        # Graphviz DOT with SMALL CIRCULAR DOTS (NOT BLOCKS)
+        # Graphviz DOT: Pure Black & White (Solid Black HEAD, White Dotted Ancestors)
         dot_lines = [
             "digraph G {",
             '  rankdir="TB";',
             '  bgcolor="transparent";',
-            '  node [shape="circle", fixedsize=true, width=0.22, height=0.22, style="filled,dotted", penwidth=2.0];',
-            '  edge [style="dotted", color="#7c3aed", penwidth=2.0, arrowhead="vee", arrowsize=0.6];'
+            '  node [shape="circle", fixedsize=true, width=0.22, height=0.22, penwidth=2.0];',
+            '  edge [style="dotted", color="#000000", penwidth=1.8, arrowhead="vee", arrowsize=0.6];'
         ]
 
         total_nodes = len(engine.commit_history_list)
@@ -404,13 +472,16 @@ if main_view == "Workspace (All 4 Data Structures)":
             cid = getattr(c, "commit_id", "")
             c_msg_str = getattr(c, "message", "")[:18]
             is_head = cid == engine.refs.head_commit_id
-            fill_col = "#c084fc" if is_head else "#ede9fe"
-            border_col = "#7e22ce" if is_head else "#a855f7"
+
+            # Monochrome: Solid black for HEAD, white dotted circle for parents
+            fill_col = "#000000" if is_head else "#ffffff"
+            border_col = "#000000"
+            node_style = "filled" if is_head else "filled,dotted"
             head_str = " (HEAD)" if is_head else ""
             xlabel_text = f"Commit #{c_num}: {c_msg_str}{head_str}"
 
             dot_lines.append(
-                f'  "{cid}" [label="", fillcolor="{fill_col}", color="{border_col}", xlabel="{xlabel_text}"];'
+                f'  "{cid}" [label="", style="{node_style}", fillcolor="{fill_col}", color="{border_col}", xlabel="{xlabel_text}"];'
             )
             if getattr(c, "parent", None):
                 dot_lines.append(f'  "{cid}" -> "{c.parent.commit_id}";')
@@ -424,7 +495,7 @@ if main_view == "Workspace (All 4 Data Structures)":
     col_ll, col_right = st.columns([1.1, 0.9])
 
     with col_ll:
-        st.markdown("### 1. Linked List (Commit Ancestry)")
+        st.markdown("### 1. Linked List (Commit Ancestry Chain)")
         
         # Human-Readable Chain: Commit #2 -> Commit #1 -> None
         total_c = len(engine.commit_history_list)
@@ -439,7 +510,7 @@ if main_view == "Workspace (All 4 Data Structures)":
 
         st.markdown(" ➔ ".join(chain_elements) + " ➔ `None (Root)`")
 
-        # Linked List Table with Commit Numbers (Robust to avoid TypeError)
+        # Linked List Table (Safe and Robust)
         ll_table = []
         for idx, c in enumerate(engine.commit_history_list):
             c_num = total_c - idx
@@ -465,7 +536,7 @@ if main_view == "Workspace (All 4 Data Structures)":
         st.markdown(f"### 2. Stack (Git Stash - LIFO) — Depth: {engine.stash.size()}")
         col_st_in, col_st_push, col_st_pop = st.columns([2, 1, 1])
         with col_st_in:
-            stash_msg = st.text_input("Stash note:", placeholder="WIP edits", label_visibility="collapsed")
+            stash_msg = st.text_input("Stash Note:", placeholder="WIP edits", label_visibility="collapsed")
         with col_st_push:
             if st.button("Push Stash", use_container_width=True):
                 ok, msg = engine.stash_push(stash_msg)
@@ -482,49 +553,77 @@ if main_view == "Workspace (All 4 Data Structures)":
             for i, item in enumerate(stashed):
                 badge = "TOP (LIFO)" if i == 0 else f"Pos {i}"
                 st.markdown(f"""
-                <div class="stack-record">
-                    <strong>[{badge}]</strong> {item.message} <small>({item.branch} - {item.timestamp})</small>
+                <div class="bw-stack-record">
+                    <strong>[{badge}]</strong> {item.message} <small>({item.branch} — {item.timestamp})</small>
                 </div>
                 """, unsafe_allow_html=True)
 
         st.markdown("---")
         # Hash Map Section
-        st.markdown(f"### 3. Hash Map (Object Database & Refs) — {engine.object_store.count()} Objects")
+        st.markdown(f"### 3. Hash Map (Object Store & References) — {engine.object_store.count()} Objects")
         col_h1, col_h2 = st.columns(2)
         with col_h1:
             st.caption("ObjectStore (Key-Value Table)")
             obj_data = [{"SHA-256 Key": k, "Commit Message": getattr(v, "message", str(v))} for k, v in engine.object_store.all_entries().items()]
             st.dataframe(obj_data, use_container_width=True)
         with col_h2:
-            st.caption("Branch RefTable")
+            st.caption("Branch Reference Table")
             ref_data = [{"Branch Name": b, "Target Commit": cid} for b, cid in engine.refs.branches.items()]
             st.dataframe(ref_data, use_container_width=True)
 
 
 # ==================================================================================================
-# VIEW 2: SEPARATE ANALYTICS DASHBOARD
+# VIEW 2: SEPARATE ANALYTICS DASHBOARD (EXECUTIVE MONOCHROME)
 # ==================================================================================================
 
 elif main_view == "Analytics Dashboard":
     st.markdown("## Repository Analytics Dashboard")
-    st.caption("Key version control metrics and recent operations log.")
+    st.caption("High-level system metrics and recent operational logs.")
 
-    # 4 Metric Cards
+    # 4 Executive Monochrome Metric Cards
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Commits", len(engine.commit_history_list), help="Linked List Nodes")
-    c2.metric("Active Branches", len(engine.refs.branches), help="Hash Map Keys")
-    c3.metric("Stashed States", engine.stash.size(), help="Stack (LIFO) Depth")
-    c4.metric("Stored Objects", engine.object_store.count(), help="Hash Map Key-Value pairs")
+    with c1:
+        st.markdown(f"""
+        <div class="bw-metric">
+            <div class="bw-metric-title">Total Commits</div>
+            <div class="bw-metric-val">{len(engine.commit_history_list)}</div>
+            <div style="font-size:11px; color:#666; margin-top:4px;">Linked List Nodes</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""
+        <div class="bw-metric">
+            <div class="bw-metric-title">Active Branches</div>
+            <div class="bw-metric-val">{len(engine.refs.branches)}</div>
+            <div style="font-size:11px; color:#666; margin-top:4px;">Hash Map Reference Keys</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown(f"""
+        <div class="bw-metric">
+            <div class="bw-metric-title">Stash Depth</div>
+            <div class="bw-metric-val">{engine.stash.size()}</div>
+            <div style="font-size:11px; color:#666; margin-top:4px;">LIFO Stack Items</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c4:
+        st.markdown(f"""
+        <div class="bw-metric">
+            <div class="bw-metric-title">Stored Objects</div>
+            <div class="bw-metric-val">{engine.object_store.count()}</div>
+            <div style="font-size:11px; color:#666; margin-top:4px;">O(1) Key-Value Entries</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("---")
-    st.markdown("### Repository Status")
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### System Status")
     st.markdown(f"""
-    - **Current Branch:** `{engine.refs.current_branch}`
-    - **Active HEAD Commit:** `[{engine.refs.head_commit_id}]`
-    - **Repository Integrity:** Verified (All nodes point to valid ancestor commitments)
+    - **Active Branch:** `{engine.refs.current_branch}`
+    - **Current HEAD Commit:** `[{engine.refs.head_commit_id}]`
+    - **Repository Integrity:** Verified (All nodes reference valid ancestor commitments)
     """)
 
-    st.markdown("### Recent Operations Log")
+    st.markdown("### Operational Execution Log")
     if engine.dsa_logs:
         st.dataframe(engine.dsa_logs, use_container_width=True)
     else:
