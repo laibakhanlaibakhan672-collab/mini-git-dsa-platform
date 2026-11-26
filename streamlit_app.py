@@ -398,40 +398,46 @@ st.markdown("""
         width: 100%;
         overflow-x: auto;
         border: 1.5px solid #000000;
-        border-radius: 4px;
+        border-radius: 5px;
         margin-top: 8px;
-        margin-bottom: 14px;
+        margin-bottom: 22px;
         background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .pro-table {
         width: 100%;
         border-collapse: collapse;
         font-family: Calibri, 'Segoe UI', Candara, Arial, sans-serif;
-        font-size: 14px;
+        font-size: 14.5px;
+        text-align: left;
     }
     .pro-table th {
-        background-color: #000000;
+        background-color: #000000 !important;
         color: #ffffff !important;
-        font-weight: 700;
-        text-align: left;
-        padding: 9px 12px;
-        border-bottom: 2px solid #000000;
-        border-right: 1px solid #333333;
-        white-space: nowrap;
-        letter-spacing: 0.2px;
+        font-weight: 700 !important;
+        text-align: left !important;
+        padding: 10px 14px !important;
+        border-bottom: 2px solid #000000 !important;
+        border-right: 1px solid #333333 !important;
+        white-space: nowrap !important;
+        letter-spacing: 0.2px !important;
     }
     .pro-table td {
-        padding: 8px 12px;
-        border-bottom: 1px solid #e5e7eb;
-        border-right: 1px solid #e5e7eb;
-        color: #111827;
-        white-space: nowrap;
+        padding: 9px 14px !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        border-right: 1px solid #e5e7eb !important;
+        color: #111827 !important;
+        white-space: nowrap !important;
+        background-color: inherit;
     }
     .pro-table tr:nth-child(even) {
-        background-color: #fafafa;
+        background-color: #f9fafb !important;
+    }
+    .pro-table tr:nth-child(odd) {
+        background-color: #ffffff !important;
     }
     .pro-table tr:hover {
-        background-color: #f3f4f6;
+        background-color: #f3f4f6 !important;
     }
 
     /* Clean Metric Boxes */
@@ -458,10 +464,13 @@ st.markdown("""
     /* Stack Box */
     .stack-record-box {
         background: #ffffff;
-        border: 1.5px dashed #000000;
+        border: 1.5px solid #000000;
         border-radius: 4px;
-        padding: 8px 12px;
-        margin-bottom: 6px;
+        padding: 9px 14px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
 
     /* Diff View */
@@ -683,89 +692,113 @@ if main_view == "Workspace (4 Data Structures)":
 
     st.markdown("---")
 
-    # Bottom Row: Linked List (Left) + Stack & Hash Map (Right)
-    col_ll, col_right = st.columns([1.1, 0.9])
+    st.markdown("---")
 
-    with col_ll:
-        st.markdown("### 1. Linked List (Commit Ancestry Chain)")
-        
-        # Human-Readable Chain: Commit #2 -> Commit #1 -> None
-        total_c = len(engine.commit_history_list)
-        chain_elements = []
-        for idx, c in enumerate(engine.commit_history_list):
-            c_num = total_c - idx
-            cid = getattr(c, "commit_id", "")
-            c_msg_str = getattr(c, "message", "")
-            is_head = cid == engine.refs.head_commit_id
-            head_tag = " (HEAD)" if is_head else ""
-            chain_elements.append(f"**Commit #{c_num}** `[{cid}]`: *\"{c_msg_str}\"*{head_tag}")
-
-        st.markdown(" ➔ ".join(chain_elements) + " ➔ `None (Root)`")
-
-        # Full Visible Table: NO truncated headers!
-        ll_headers = ["Version", "Commit ID", "Message", "Branch", "Author", "Parent Pointer", "Timestamp"]
-        ll_rows = []
-        for idx, c in enumerate(engine.commit_history_list):
-            c_num = total_c - idx
-            cid = getattr(c, "commit_id", "")
-            pid = f"[{c.parent.commit_id}]" if getattr(c, "parent", None) else "None (Root)"
-            ll_rows.append([
-                f"Commit #{c_num}",
-                f"[{cid}]",
-                getattr(c, "message", ""),
-                getattr(c, "branch", "main"),
-                getattr(c, "author", "Developer"),
-                pid,
-                getattr(c, "timestamp_str", "")
-            ])
-
-        st.markdown(render_html_table(ll_headers, ll_rows), unsafe_allow_html=True)
-
-    with col_right:
-        # Stack Section
-        st.markdown(f"### 2. Stack (Git Stash - LIFO) — Depth: {engine.stash.size()}")
-        col_st_in, col_st_push, col_st_pop = st.columns([1.5, 1.25, 1.25])
-        with col_st_in:
-            stash_msg = st.text_input("Stash Note:", placeholder="WIP edits", label_visibility="collapsed")
-        with col_st_push:
-            if st.button("Push Stash", use_container_width=True):
-                ok, msg = engine.stash_push(stash_msg)
+    # ----------------------------------------------------------------------------------------------
+    # 2. STACK (GIT STASH - LIFO)
+    # ----------------------------------------------------------------------------------------------
+    st.markdown(f"### 2. Stack (Git Stash - LIFO) — Current Depth: `{engine.stash.size()}`")
+    st.caption("Shelve uncommitted modifications on a Last-In, First-Out (LIFO) stack before switching contexts.")
+    
+    col_st_in, col_st_push, col_st_pop = st.columns([2.2, 1.0, 1.0])
+    with col_st_in:
+        stash_msg = st.text_input("Stash Note:", placeholder="e.g. WIP changes before checkout", label_visibility="collapsed")
+    with col_st_push:
+        if st.button("Push Stash", use_container_width=True):
+            ok, msg = engine.stash_push(stash_msg)
+            st.session_state.editor_text = engine.working_content
+            st.rerun()
+    with col_st_pop:
+        if st.button("Pop Stash", use_container_width=True):
+            ok, msg = engine.stash_pop()
+            if ok:
                 st.session_state.editor_text = engine.working_content
-                st.rerun()
-        with col_st_pop:
-            if st.button("Pop Stash", use_container_width=True):
-                ok, msg = engine.stash_pop()
-                if ok:
-                    st.session_state.editor_text = engine.working_content
-                st.rerun()
+            st.rerun()
 
-        stashed = engine.stash.get_all()
-        if not stashed:
-            st.caption("Stash stack is currently empty.")
-        else:
-            for i, item in enumerate(stashed):
-                badge = "TOP (LIFO)" if i == 0 else f"Pos {i}"
-                st.markdown(f"""
-                <div class="stack-record-box">
-                    <strong>[{badge}]</strong> {item.message} <small>({item.branch} — {item.timestamp})</small>
-                </div>
-                """, unsafe_allow_html=True)
+    stashed = engine.stash.get_all()
+    if not stashed:
+        st.caption("Stash stack is currently empty. No shelved working tree modifications.")
+    else:
+        for i, item in enumerate(stashed):
+            badge = "TOP (LIFO)" if i == 0 else f"Depth #{i+1}"
+            st.markdown(f"""
+            <div class="stack-record-box">
+                <span style="background:#000000; color:#ffffff; padding:2px 8px; border-radius:3px; font-weight:700; font-size:12px; margin-right:10px;">{badge}</span>
+                <strong>{item.message}</strong>
+                <span style="color:#6b7280; font-size:13px; margin-left:14px;">Branch: <code>{item.branch}</code> | Saved: {item.timestamp}</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-        st.markdown("---")
-        # Hash Map Section
-        st.markdown(f"### 3. Hash Map (Object Store & References) — {engine.object_store.count()} Objects")
-        col_h1, col_h2 = st.columns(2)
-        with col_h1:
-            st.caption("ObjectStore (Key-Value Table)")
-            obj_headers = ["SHA-256 Key", "Commit Message"]
-            obj_rows = [[k, getattr(v, "message", str(v))] for k, v in engine.object_store.all_entries().items()]
-            st.markdown(render_html_table(obj_headers, obj_rows), unsafe_allow_html=True)
-            
-        with col_h2:
-            st.caption("Branch Reference Table")
-            ref_headers = ["Branch Name", "Target Commit"]
-            ref_rows = [[b, cid] for b, cid in engine.refs.branches.items()]
-            st.markdown(render_html_table(ref_headers, ref_rows), unsafe_allow_html=True)
+    # ----------------------------------------------------------------------------------------------
+    # DATA STRUCTURE REGISTRY TABLES (ARRANGED SEQUENTIALLY: EK KY NEECHY DUSRA)
+    # ----------------------------------------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("### ■ Data Structure Registry Tables")
+    st.caption("Complete repository state inspection. Each table is rendered sequentially for optimal readability.")
+
+    # TABLE 1: LINKED LIST
+    st.markdown("#### 1. Singly Linked List — Commit Ancestry Chain")
+    total_c = len(engine.commit_history_list)
+    chain_elements = []
+    for idx, c in enumerate(engine.commit_history_list):
+        c_num = total_c - idx
+        cid = getattr(c, "commit_id", "")
+        c_msg_str = getattr(c, "message", "")
+        is_head = cid == engine.refs.head_commit_id
+        head_tag = " (HEAD)" if is_head else ""
+        chain_elements.append(f"**Commit #{c_num}** `[{cid}]`: *\"{c_msg_str}\"*{head_tag}")
+
+    st.markdown("<div style='padding:8px 12px; background:#fafafa; border:1px solid #e5e7eb; border-radius:4px; margin-bottom:10px;'>" + " ➔ ".join(chain_elements) + " ➔ <span style='color:#6b7280; font-style:italic;'>None (Root)</span></div>", unsafe_allow_html=True)
+
+    ll_headers = ["Version", "Commit Hash", "Commit Message", "Branch", "Author", "Parent Pointer (Linked List)", "Timestamp"]
+    ll_rows = []
+    for idx, c in enumerate(engine.commit_history_list):
+        c_num = total_c - idx
+        cid = getattr(c, "commit_id", "")
+        pid = f"[{c.parent.commit_id}]" if getattr(c, "parent", None) else "None (Root)"
+        ll_rows.append([
+            f"Commit #{c_num}",
+            f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; font-weight:700;'>[{cid}]</code>",
+            getattr(c, "message", ""),
+            f"<span style='background:#000000; color:#ffffff; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;'>{getattr(c, 'branch', 'main')}</span>",
+            getattr(c, "author", "Developer"),
+            f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; color:#4b5563;'>{pid}</code>",
+            getattr(c, "timestamp_str", "")
+        ])
+
+    st.markdown(render_html_table(ll_headers, ll_rows), unsafe_allow_html=True)
+
+    # TABLE 2: HASH MAP - OBJECT STORE (DIRECTLY BELOW TABLE 1)
+    st.markdown("#### 2. Hash Map — ObjectStore (SHA-256 Key-Value Store)")
+    st.caption("Global immutable content-addressable storage providing O(1) object lookup by cryptographic hash.")
+    
+    obj_headers = ["Object Key (SHA-256 Hash)", "Object Type", "Commit Message / Payload", "Lookup Complexity"]
+    obj_rows = []
+    for k, v in engine.object_store.all_entries().items():
+        obj_rows.append([
+            f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; font-weight:700;'>{k}</code>",
+            "Commit Snapshot",
+            getattr(v, "message", str(v)),
+            "<span style='background:#000000; color:#ffffff; padding:2px 7px; border-radius:3px; font-size:11px; font-weight:700;'>O(1) Hash</span>"
+        ])
+    st.markdown(render_html_table(obj_headers, obj_rows), unsafe_allow_html=True)
+
+    # TABLE 3: HASH MAP - BRANCH REFERENCES (DIRECTLY BELOW TABLE 2)
+    st.markdown("#### 3. Hash Map — Branch Reference Table (RefTable)")
+    st.caption("Pointers mapping named branches to exact commit hash targets in O(1) time.")
+    
+    ref_headers = ["Branch Name (Ref Key)", "Target Commit Hash", "Status", "Lookup Complexity"]
+    ref_rows = []
+    for b, cid in engine.refs.branches.items():
+        is_curr = (b == engine.refs.current_branch)
+        status_badge = "<span style='background:#000000; color:#ffffff; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;'>● ACTIVE (HEAD)</span>" if is_curr else "<span style='background:#f3f4f6; color:#4b5563; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;'>INACTIVE</span>"
+        ref_rows.append([
+            f"<strong>{b}</strong>",
+            f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; font-weight:700;'>[{cid}]</code>",
+            status_badge,
+            "<span style='background:#000000; color:#ffffff; padding:2px 7px; border-radius:3px; font-size:11px; font-weight:700;'>O(1) Hash</span>"
+        ])
+    st.markdown(render_html_table(ref_headers, ref_rows), unsafe_allow_html=True)
 
 
 # ==================================================================================================
