@@ -257,10 +257,69 @@ st.markdown("""
         color: #111827 !important;
     }
 
-    /* Target Text Elements Specifically (Never break icon fonts) */
-    p, label, input, textarea, .stMarkdown p, .stMarkdown span, .stMarkdown li {
+    /* Target Text Elements Specifically (Never break icon fonts or badges) */
+    p, label, input, textarea, .stMarkdown p, .stMarkdown li {
         font-family: Calibri, 'Segoe UI', Candara, Arial, sans-serif !important;
         color: #111827 !important;
+    }
+
+    /* Professional High-Contrast Badges (Clean White/Light, Zero Black Smudges) */
+    .status-pill-active {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1.5px solid #000000 !important;
+        padding: 3px 10px !important;
+        border-radius: 12px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+    .status-pill-inactive {
+        background-color: #f9fafb !important;
+        color: #6b7280 !important;
+        border: 1px solid #d1d5db !important;
+        padding: 3px 10px !important;
+        border-radius: 12px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+    .complexity-pill {
+        background-color: #f8fafc !important;
+        color: #000000 !important;
+        border: 1.5px solid #000000 !important;
+        padding: 2px 8px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        font-family: monospace, Calibri, sans-serif !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+    .branch-pill {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1.5px solid #000000 !important;
+        padding: 2px 8px !important;
+        border-radius: 12px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+    .lifo-pill {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1.5px solid #000000 !important;
+        padding: 2px 8px !important;
+        border-radius: 4px !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
+        margin-right: 10px !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
     }
 
     /* Protect Streamlit Material Icons & Expander Arrows from font corruption */
@@ -723,7 +782,7 @@ if main_view == "Workspace (4 Data Structures)":
             badge = "TOP (LIFO)" if i == 0 else f"Depth #{i+1}"
             st.markdown(f"""
             <div class="stack-record-box">
-                <span style="background:#000000; color:#ffffff; padding:2px 8px; border-radius:3px; font-weight:700; font-size:12px; margin-right:10px;">{badge}</span>
+                <span class="lifo-pill">{badge}</span>
                 <strong>{item.message}</strong>
                 <span style="color:#6b7280; font-size:13px; margin-left:14px;">Branch: <code>{item.branch}</code> | Saved: {item.timestamp}</span>
             </div>
@@ -760,7 +819,7 @@ if main_view == "Workspace (4 Data Structures)":
             f"Commit #{c_num}",
             f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; font-weight:700;'>[{cid}]</code>",
             getattr(c, "message", ""),
-            f"<span style='background:#000000; color:#ffffff; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;'>{getattr(c, 'branch', 'main')}</span>",
+            f"<span class='branch-pill'>{getattr(c, 'branch', 'main')}</span>",
             getattr(c, "author", "Developer"),
             f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; color:#4b5563;'>{pid}</code>",
             getattr(c, "timestamp_str", "")
@@ -779,7 +838,7 @@ if main_view == "Workspace (4 Data Structures)":
             f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; font-weight:700;'>{k}</code>",
             "Commit Snapshot",
             getattr(v, "message", str(v)),
-            "<span style='background:#000000; color:#ffffff; padding:2px 7px; border-radius:3px; font-size:11px; font-weight:700;'>O(1) Hash</span>"
+            "<span class='complexity-pill'>O(1) Hash</span>"
         ])
     st.markdown(render_html_table(obj_headers, obj_rows), unsafe_allow_html=True)
 
@@ -791,12 +850,12 @@ if main_view == "Workspace (4 Data Structures)":
     ref_rows = []
     for b, cid in engine.refs.branches.items():
         is_curr = (b == engine.refs.current_branch)
-        status_badge = "<span style='background:#000000; color:#ffffff; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;'>● ACTIVE (HEAD)</span>" if is_curr else "<span style='background:#f3f4f6; color:#4b5563; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;'>INACTIVE</span>"
+        status_badge = "<span class='status-pill-active'>● Active (HEAD)</span>" if is_curr else "<span class='status-pill-inactive'>Inactive</span>"
         ref_rows.append([
             f"<strong>{b}</strong>",
             f"<code style='background:#f3f4f6; padding:2px 6px; border-radius:3px; font-weight:700;'>[{cid}]</code>",
             status_badge,
-            "<span style='background:#000000; color:#ffffff; padding:2px 7px; border-radius:3px; font-size:11px; font-weight:700;'>O(1) Hash</span>"
+            "<span class='complexity-pill'>O(1) Hash</span>"
         ])
     st.markdown(render_html_table(ref_headers, ref_rows), unsafe_allow_html=True)
 
